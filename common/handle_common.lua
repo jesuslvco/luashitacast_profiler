@@ -328,7 +328,7 @@ function handle_common.CheckDefault(sets)
     
 	handle_common.SetTownGear();
     --handle_common.auto();
-    handle_common.AreaBuff();
+    --handle_common.AreaBuff();
 
     --Control de auto
     if(handle_common.auto == true) then
@@ -695,19 +695,19 @@ function handle_common.tp_levels()
 
     if (level > 70) and (level < 75) then
         handle_common.useSet('tp_level_70');
-    elseif (level >= 60) and (level < 71) then
+    elseif (level > 60) and (level <= 70) then
         handle_common.useSet('tp_level_60');
-    elseif (level >= 50) and (level < 61) then
+    elseif (level > 50) and (level <= 60) then
         handle_common.useSet('tp_level_50');
-    elseif (level >= 40) and (level < 51) then
+    elseif (level > 40) and (level <= 50) then
         handle_common.useSet('tp_level_40');
-    elseif (level >= 30) and (level < 41) then
+    elseif (level > 30) and (level <= 40) then
         handle_common.useSet('tp_level_30');
-    elseif (level >= 20) and (level < 31) then
+    elseif (level > 20) and (level <= 30) then
         handle_common.useSet('tp_level_20');
-    elseif (level >= 10) and (level < 21) then
+    elseif (level > 10) and (level <= 20) then
         handle_common.useSet('tp_level_10');
-    elseif (level >= 1) and (level < 11) then
+    elseif (level >= 1) and (level <= 10) then
         handle_common.useSet('tp_level_1');
     end
 end
@@ -719,19 +719,19 @@ function handle_common.ws_levels()
 
     if (level > 70) and (level < 75) then
         handle_common.useSet('ws_level_70');
-    elseif (level >= 60) and (level < 71) then
+    elseif (level > 60) and (level <= 70) then
         handle_common.useSet('ws_level_60');
-    elseif (level >= 50) and (level < 61) then
+    elseif (level > 50) and (level <= 60) then
         handle_common.useSet('ws_level_50');
-    elseif (level >= 40) and (level < 51) then
+    elseif (level > 40) and (level <= 50) then
         handle_common.useSet('ws_level_40');
-    elseif (level >= 30) and (level < 41) then
+    elseif (level > 30) and (level <= 40) then
         handle_common.useSet('ws_level_30');
-    elseif (level >= 20) and (level < 31) then
+    elseif (level > 20) and (level <= 30) then
         handle_common.useSet('ws_level_20');
-    elseif (level >= 10) and (level < 21) then
+    elseif (level > 10) and (level <= 20) then
         handle_common.useSet('ws_level_10');
-    elseif (level >= 1) and (level < 11) then
+    elseif (level >= 1) and (level <= 10) then
         handle_common.useSet('ws_level_1');
     end
 end

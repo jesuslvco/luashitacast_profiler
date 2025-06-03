@@ -228,6 +228,7 @@ function common_curita.GetPartyMembers()
         if pParty:GetMemberIsActive(i) == 1 then
             local member = {}
             local myIndex = pParty:GetMemberTargetIndex(i)
+            member.Index = i
             member.HP = pParty:GetMemberHP(i)
             member.HPP = pParty:GetMemberHPPercent(i)
             member.MP = pParty:GetMemberMP(i)
@@ -241,10 +242,28 @@ function common_curita.GetPartyMembers()
             else
                 member.MaxHP = 0
             end
+            -- Obtener el target actual del miembro
+            local targetIndex = pEntity:GetTargetIndex(myIndex)
+            if targetIndex and targetIndex > 0 then
+                local targetName = pEntity:GetName(targetIndex)
+                member.CurrentTarget = targetName
+            else
+                member.CurrentTarget = nil
+            end
             table.insert(members, member)
         end
     end
     return members
+end
+
+function common_curita.getMemberByIndex(index)
+    local partyMembers = common_curita.GetPartyMembers()
+    for _, member in ipairs(partyMembers) do
+        if member.Index == index then
+            return member
+        end
+    end
+    return nil
 end
 
 function common_curita.castBestRegen()
