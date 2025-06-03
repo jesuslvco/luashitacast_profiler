@@ -16,11 +16,11 @@ common_curita.damageStartTime = {}     -- [targetName] = timestamp de inicio del
 common_curita.HealThreshold = 20 -- Porcentaje de vida faltante para considerar apto para cura
 
 local cureSpellIds = {
-    ['Cure'] = 2,
-    ['Cure II'] = 3,
-    ['Cure III'] = 4,
-    ['Cure IV'] = 5,
-    ['Cure V'] = 6,
+    ['Cure'] = 1,
+    ['Cure II'] = 2,
+    ['Cure III'] = 3,
+    ['Cure IV'] = 4,
+    ['Cure V'] = 5,
 }
 
 local regenSpellIds = {
@@ -41,6 +41,18 @@ local regenCosts = {
     ['Regen III'] = 64,
 }
 
+-- JObs y Lvls para los hechizos de cura
+local spellJobLevels = {
+    -- [spellId] = { [jobAbbr] = minLevel, ... }
+    [1]   = { WHM = 1,  RDM = 5,  SCH = 3 },   -- Cure
+    [2]   = { WHM = 11, RDM = 14, SCH = 17 },   -- Cure II
+    [3]   = { WHM = 21, RDM = 26, SCH = 30 },   -- Cure III
+    [4]   = { WHM = 41, RDM = 48, SCH = 55 },   -- Cure IV
+    [5]   = { WHM = 61 },                      -- Cure V
+    [108] = { WHM = 21, RDM = 21, SCH = 18 },  -- Regen
+    [110] = { WHM = 41, SCH = 37 },  -- Regen II
+    [111] = { WHM = 65, SCH = 59 },            -- Regen III
+}
 
 common_curita.process_handler = function(profile, sets)
     local player = gData.GetPlayer();
@@ -51,14 +63,14 @@ common_curita.process_handler = function(profile, sets)
     end
 
     -- Verifica si el jugador tiene MP suficiente para curar
-    if (player.MP < 10 and player.Status ~= "Resting") then
+    if (player.MP < 24 and player.Status ~= "Resting") then
         AshitaCore:GetChatManager():QueueCommand(1, '/heal');
     end
 
     -- Verifica si hay miembros del grupo que necesiten cura
     local partyMembers = common_curita.GetPartyMembers()
     if #partyMembers == 0 then
-        print("No hay miembros del grupo para curar.");
+       ---- print("No hay miembros del grupo para curar.");
         return;
     end
 
@@ -100,7 +112,7 @@ common_curita.castCure = function(target, cure)
 
         -- Encuentra al miembro con mayor porcentaje de HP faltante dentro de rango y que supere el umbral
         for _, member in ipairs(partyMembers) do
-            if member.HPP > 0 and member.Distance <= 20 then
+            if member.HPP > 0 and member.Distance > 0 and member.Distance <= 20 then
                 local missingPercent = 100 - member.HPP
                 local missingHP = member.MaxHP - member.HP
 
@@ -121,52 +133,58 @@ common_curita.castCure = function(target, cure)
             local hpToHeal = math.floor(target.MaxHP * 0.9) - target.HP
             if hpToHeal < 0 then hpToHeal = 0 end
 
-            for cureName, cureAmount in pairs(cures) do
-                local mpCost = curesCost[cureName] or 0
-                if common_curita.CanCastCureSpell(cureName) and cureAmount >= hpToHeal and player.MP >= mpCost then
-                    local overheal = cureAmount - hpToHeal
-                    if not selectedCure or overheal < minOverheal then
-                        selectedCure = cureName
-                        minOverheal = overheal
-                    end
-                end
-            end
-            -- Si ninguna cura aprendida cubre el HP necesario, usa la más alta que conozca y que tenga MP suficiente
-            if not selectedCure then
-                local highestCure = nil
-                for cureName, _ in pairs(cures) do
+                for cureName, cureAmount in pairs(cures) do
                     local mpCost = curesCost[cureName] or 0
-                    if cureName ~= nil and common_curita.HasCureSpell(cureName) and player.MP >= mpCost then
-                        highestCure = cureName
+                    if common_curita.CanCastCureSpell(cureName) and cureAmount >= hpToHeal and player.MP >= mpCost then
+                        local overheal = cureAmount - hpToHeal
+                        if not selectedCure or overheal < minOverheal then
+                            selectedCure = cureName
+                            minOverheal = overheal
+                        end
                     end
                 end
-                selectedCure = highestCure or 'Cure'
+                -- Si ninguna cura aprendida cubre el HP necesario, usa la más alta que conozca y que tenga MP suficiente
+                if not selectedCure then
+                    local highestCure = nil
+                    for cureName, _ in pairs(cures) do
+                        local mpCost = curesCost[cureName] or 0
+                        if cureName ~= nil and common_curita.CanCastCureSpell(cureName) and player.MP >= mpCost then
+                            highestCure = cureName
+                        end
+                    end
+                    selectedCure = highestCure
+                end
+
+                if(selectedCure ~= nil)then
+
+                    
+                    
+                    castCure.Target = target.Name
+                    castCure.Cure = selectedCure
+                    castCure.MissingHP = maxMissingHP
+                    castCure.MissingPercent = maxMissingPercent
+                    castCure.Distance = target.Distance
+                    
+                    
+                    --castear la cura con commando
+                    local command = string.format('/ma "%s" %s', castCure.Cure, castCure.Target)
+                    AshitaCore:GetChatManager():QueueCommand(1, command);
+                    
+                    -- Actualiza el timer del hechizo para ese objetivo
+                    if not common_curita.cureTimers[castCure.Target] then
+                        common_curita.cureTimers[castCure.Target] = {}
+                    end
+                    common_curita.cureTimers[castCure.Target][castCure.Cure] = os.time()
+                    
+                    -- Suma el healing estimado realizado a ese objetivo
+                    common_curita.healingDone[castCure.Target] = (common_curita.healingDone[castCure.Target] or 0) + (cures[castCure.Cure] or 0)
+                end
+                
+            elseif (target and maxMissingHP <= 0) then
+                
             end
-
-            castCure.Target = target.Name
-            castCure.Cure = selectedCure
-            castCure.MissingHP = maxMissingHP
-            castCure.MissingPercent = maxMissingPercent
-            castCure.Distance = target.Distance
-
-            --castear la cura con commando
-            local command = string.format('/ma "%s" %s', castCure.Cure, castCure.Target)
-            AshitaCore:GetChatManager():QueueCommand(1, command);
-
-            -- Actualiza el timer del hechizo para ese objetivo
-            if not common_curita.cureTimers[castCure.Target] then
-                common_curita.cureTimers[castCure.Target] = {}
-            end
-            common_curita.cureTimers[castCure.Target][castCure.Cure] = os.time()
-
-            -- Suma el healing estimado realizado a ese objetivo
-            common_curita.healingDone[castCure.Target] = (common_curita.healingDone[castCure.Target] or 0) + (cures[castCure.Cure] or 0)
-
-        elseif (target and maxMissingHP <= 0) then
-           
         end
-end
-
+        
 function common_curita.UpdateDamageTaken()
     local partyMembers = common_curita.GetPartyMembers()
     local now = os.time()
@@ -195,7 +213,7 @@ function common_curita.UpdateDamageTaken()
             common_curita.castBestRegen();
 
             local dpm = common_curita.damageTaken[name] or 0
-            print(string.format("[DPM] %s: %d daño/minuto", name, dpm))
+           ---- print(string.format("[DPM] %s: %d daño/minuto", name, dpm))
             common_curita.damageTaken[name] = 0
             common_curita.damageStartTime[name] = now
         end
@@ -239,13 +257,13 @@ function common_curita.castBestRegen()
     -- Justo antes de tu loop de Regens en castBestRegen
     for regenName, spellId in pairs(regenSpellIds) do
         local hasSpell = AshitaCore:GetMemoryManager():GetPlayer():HasSpell(spellId)
-        print(string.format("[DEBUG] Spell: %s, ID: %s, hasSpell: %s", regenName, tostring(spellId), tostring(hasSpell)))
+       ---- print(string.format("[DEBUG] Spell: %s, ID: %s, hasSpell: %s", regenName, tostring(spellId), tostring(hasSpell)))
     end
 
-    print("[Regen] Buscando miembro con mayor DPM...")
+   ---- print("[Regen] Buscando miembro con mayor DPM...")
     for _, member in ipairs(partyMembers) do
         local dpm = common_curita.damageTaken[member.Name] or 0
-        print(string.format("[Regen] %s: DPM=%d", member.Name, dpm))
+       ---- print(string.format("[Regen] %s: DPM=%d", member.Name, dpm))
         if dpm > maxDpm then
             maxDpm = dpm
             targetMember = member
@@ -253,9 +271,9 @@ function common_curita.castBestRegen()
     end
 
     if targetMember then
-        print(string.format("[Regen] Mayor DPM: %s (%d)", targetMember.Name, maxDpm))
+       ---- print(string.format("[Regen] Mayor DPM: %s (%d)", targetMember.Name, maxDpm))
     else
-        print("[Regen] No se encontró miembro para Regen.")
+       ---- print("[Regen] No se encontró miembro para Regen.")
     end
 
     if targetMember and maxDpm > 200 then
@@ -264,7 +282,7 @@ function common_curita.castBestRegen()
         for regenName, healAmount in pairs(regenAmounts) do
             local mpCost = regenCosts[regenName] or 0
             local canCast = common_curita.CanCastRegenSpell(regenName)
-            print(string.format("[Regen] Intentando %s: heal=%d, mpCost=%d, canCast=%s, mp=%d", regenName, healAmount, mpCost, tostring(canCast), player.MP))
+           ---- print(string.format("[Regen] Intentando %s: heal=%d, mpCost=%d, canCast=%s, mp=%d", regenName, healAmount, mpCost, tostring(canCast), player.MP))
             if canCast and player.MP >= mpCost then
                 if healAmount > bestAmount then
                     bestRegen = regenName
@@ -274,57 +292,67 @@ function common_curita.castBestRegen()
         end
         if bestRegen then
             local command = string.format('/ma "%s" %s', bestRegen, targetMember.Name)
-            print(string.format("[Regen] Casteando %s en %s (DPM: %d)", bestRegen, targetMember.Name, maxDpm))
+           -- print(string.format("[Regen] Casteando %s en %s (DPM: %d)", bestRegen, targetMember.Name, maxDpm))
             AshitaCore:GetChatManager():QueueCommand(1, command)
         else
-            print("[Regen] No hay ningún Regen disponible para castear.")
+           ---- print("[Regen] No hay ningún Regen disponible para castear.")
         end
     else
-        print("[Regen] Ningún miembro supera el umbral de DPM para Regen.")
+       ---- print("[Regen] Ningún miembro supera el umbral de DPM para Regen.")
     end
-end
-
-function common_curita.CanCastRegenSpell(spellName)
-    local spellId = regenSpellIds[spellName]
-    if not spellId then
-        print('[CanCastRegenSpell] No se encontró el ID para el spell Regen:', spellName)
-        return false
-    end
-    local player = AshitaCore:GetMemoryManager():GetPlayer()
-    local recast = AshitaCore:GetMemoryManager():GetRecast():GetSpellTimer(spellId)
-    local hasSpell = player:HasSpell(spellId)
-    print(string.format("[CanCastRegenSpell] %s (ID: %s): hasSpell=%s, recast=%s", spellName, tostring(spellId), tostring(hasSpell), tostring(recast)))
-    if not hasSpell then
-        print(string.format("[CanCastRegenSpell] El jugador NO tiene aprendido %s (ID: %s)", spellName, tostring(spellId)))
-    end
-    if recast ~= 0 then
-        print(string.format("[CanCastRegenSpell] %s (ID: %s) está en recast (%s)", spellName, tostring(spellId), tostring(recast)))
-    end
-    return hasSpell and recast == 0
 end
 
 function common_curita.CanCastCureSpell(spellName)
     local spellId = cureSpellIds[spellName]
-    if not spellId then
-        print('No se encontró el ID para el hechizo:', spellName)
-        return false
-    end
+    if not spellId then return false end
     local player = AshitaCore:GetMemoryManager():GetPlayer()
     local recast = AshitaCore:GetMemoryManager():GetRecast():GetSpellTimer(spellId)
     local hasSpell = player:HasSpell(spellId)
-    --print(string.format("Chequeando %s (ID: %s): hasSpell=%s, recast=%s", spellName, tostring(spellId), tostring(hasSpell), tostring(recast)))
-    return hasSpell and recast == 0
+    local canUse = common_curita.CheckLevels(spellId)
+    return hasSpell and canUse and recast == 0
+end
+
+function common_curita.CanCastRegenSpell(spellName)
+    local spellId = regenSpellIds[spellName]
+    if not spellId then return false end
+    local player = AshitaCore:GetMemoryManager():GetPlayer()
+    local recast = AshitaCore:GetMemoryManager():GetRecast():GetSpellTimer(spellId)
+    local hasSpell = player:HasSpell(spellId)
+    local canUse = common_curita.CheckLevels(spellId)
+    return hasSpell and canUse and recast == 0
 end
 
 function common_curita.HasCureSpell(spellName)
     local spellId = cureSpellIds[spellName]
     if not spellId then
-        print('No se encontró el ID para el hechizo:', spellName)
+       ---- print('No se encontró el ID para el hechizo:', spellName)
         return false
     end
     local player = AshitaCore:GetMemoryManager():GetPlayer()
     local hasSpell = player:HasSpell(spellId)
     return hasSpell
+end
+
+function common_curita.CheckLevels(spellId)
+    local player = gData.GetPlayer();
+    local level = player.MainJobLevel;
+    local MainJob = player.MainJob;
+    
+
+    local reqs = spellJobLevels[spellId]
+    if not reqs then
+       -- print(string.format("[CheckLevels] No hay requisitos para spellId: %s", tostring(spellId)))
+        return false
+    end
+
+    -- Main job
+    if MainJob and reqs[MainJob] then
+        if level >= reqs[MainJob] then
+            return true
+        end
+    end
+    
+    return false
 end
 
 return common_curita;

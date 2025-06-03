@@ -6,7 +6,7 @@ local common_functions = gFunc.LoadFile('common\\common_functions.lua');
 
 local handle_common = T{};
 -- handle_common sets
-handle_common.AliasList = T{'craft','choco','fishing','helm','acc','eva','mac','th','pdt','mdt','emnity','ring_hpp75','autodps','pet_range','xray'};
+handle_common.AliasList = T{'craft','choco','fishing','helm','acc','eva','mac','th','pdt','mdt','emnity','ring_hpp75','auto','pet_range','xray'};
 -- check areas for towns
 handle_common.Towns = T{'Tavnazian Safehold','Al Zahbi','Aht Urhgan Whitegate','Nashmau','Southern San d\'Oria [S]','Bastok Markets [S]','Windurst Waters [S]','San d\'Oria-Jeuno Airship','Bastok-Jeuno Airship','Windurst-Jeuno Airship','Kazham-Jeuno Airship','Southern San d\'Oria','Northern San d\'Oria','Port San d\'Oria','Chateau d\'Oraguille','Bastok Mines','Bastok Markets','Port Bastok','Metalworks','Windurst Waters','Windurst Walls','Port Windurst','Windurst Woods','Heavens Tower','Ru\'Lude Gardens','Upper Jeuno','Lower Jeuno','Port Jeuno','Rabao','Selbina','Mhaura','Kazham','Norg','Mog Garden','Celennia Memorial Library','Western Adoulin','Eastern Adoulin'};
 -- ws distance safety check
@@ -327,12 +327,12 @@ function handle_common.CheckDefault(sets)
     local seigan = gData.GetBuffCount('Seigan');
     
 	handle_common.SetTownGear();
-    --handle_common.autoDps();
+    --handle_common.auto();
     handle_common.AreaBuff();
 
-    --Control de AutoDps
-    if(handle_common.autodps == true) then
-        common_functions.autoDps();
+    --Control de auto
+    if(handle_common.auto == true) then
+        common_functions.auto();
     end
 
     --Pets Check ----------------------------------------

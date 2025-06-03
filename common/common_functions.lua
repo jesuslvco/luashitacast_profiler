@@ -33,7 +33,7 @@ local petsSkills = {
 local common_functions = T{};
 
 -- Function to automatically handle DPS for specific jobs
-function common_functions.autoDps()
+function common_functions.auto()
     local player = gData.GetPlayer();
     local level = player.MainJobLevel;
     local zone = gData.GetEnvironment();
