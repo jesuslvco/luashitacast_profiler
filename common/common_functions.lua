@@ -4,8 +4,25 @@ local encoding = require('encoding');
 
 local petsByLvl = {
     [23] = 'Herbal Broth',
+    [28] = 'Meat Broth',
     [33] = 'Carrion Broth',
+    [38] = 'Tree Sap',
     [43] = 'S. Herbal Broth',
+};
+
+local hqPetsByLvl = {
+    [38] = 'Antica Broth',
+    [43] = 'Blood Broth',
+};
+
+local petsSkills = {
+    ["SheepFamiliar"] = 'Lamb Chop',
+    ["LizardFamiliar"] = 'Brain Crush',
+    ["TigerFamiliar"] = 'Razor Fang',
+    ["BeetleFamiliar"] = 'Power Attack',
+    ["LullabyMelodia"] = 'Lamb Chop',
+    ["MiteFamiliar"] = 'Double Claw',
+    ["AntlionFamiliar"] = 'Mandibular Bite',
 };
 --weapons 
 --local weapons =
@@ -89,10 +106,84 @@ function common_functions.autoDps()
             end
             if(player.MainJob == 'BST') then
 
-                -- Call Beast
-                local recastCallBeast = common_functions.CheckAbilityRecast('Call Beast');
+                
                 -- Ready
                 local recastReady = common_functions.CheckAbilityRecast('Ready');
+                local recastCallBeast = common_functions.CheckAbilityRecast('Call Beast');
+                local bestialLoyalty = common_functions.CheckAbilityRecast('Bestial Loyalty');
+                
+
+                local pet = gData.GetPet();
+                
+                if (player.Status == 'Engaged') then
+                    if (pet == nil and (bestialLoyalty <= 0 or recastCallBeast <= 0)) then
+                        local petItem =  common_functions.GetAvailablePetItem(player.MainJobLevel);
+                        local hqPetItem =  common_functions.GetAvailableHQPetItem(player.MainJobLevel);
+
+                        if (bestialLoyalty <= 0 and hqPetItem ~= nil) then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "' .. hqPetItem..'"');
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/ja "Bestial Loyalty" <me>');
+                        elseif(petItem ~= nil) and (recastCallBeast <= 0) then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "' .. petItem..'"');
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/ja "call beast" <me>');                                
+                        end
+                    end
+
+                    -- Check for ammo slot
+                   --[[ 
+                   local slot = gData.GetEquipment('Ammo');
+                    if(slot ~= nil and slot.Ammo ~= nil) then
+                        --print('Ammo Slot: ' .. slot.Ammo.Name);
+                    else
+                        if(common_functions.HasItem('Wooden Arrow'))then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "Wooden Arrow"');
+                            --print('You have Wooden arrow in your inventory');
+                        end
+                    end
+                    ]]
+                    
+                    if(pet ~= nil and pet.Status ~= 'Engaged') then
+                        AshitaCore:GetChatManager():QueueCommand(-1, '/ja "fight" <t>');
+                    end
+
+                    if(pet ~= nil) then
+
+                        local petSkill = petsSkills[pet.Name];
+                            -- Call Beast
+                        if(petSkill ~= nil) then
+                            -- Check if the pet skill is ready to use
+                            local recastSkill = common_functions.CheckAbilityRecast(petSkill);
+    
+                            if(pet.Status == 'Engaged' and recastSkill <= 0) then
+                                    AshitaCore:GetChatManager():QueueCommand(-1, '/pet "' .. petSkill .. '" <me>');
+                            end
+                        end
+
+                    end
+                    
+                    if(player.TP <= 999) then
+                        gFunc.CancelAction();
+                        return;
+                    else
+                        if(level >= 55) and (level <= 75 ) then
+                           AshitaCore:GetChatManager():QueueCommand(-1, '/ws "Rampage" <t>');
+                        end
+                        if(level >= 1) and (level < 55 ) then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/ws "Raging axe" <t>');
+                        end
+                    end
+                    
+                end
+            end
+
+            if(player.MainJob == 'WAR') then
+
+                -- Call Beast
+                local berse = common_functions.CheckAbilityRecast('Call Beast');
+                -- Ready
+                local recastReady = common_functions.CheckAbilityRecast('Ready');
+                
+                print('Ready: ' .. recastReady);
 
                 local pet = gData.GetPet();
 
@@ -159,6 +250,19 @@ function common_functions.GetAvailablePetItem(playerLevel)
     local selectedItem = nil
     local selectedLevel = 0
     for lvl, item in pairs(petsByLvl) do
+        if lvl <= playerLevel and lvl > selectedLevel then
+            if common_functions.HasItem(item) then
+                selectedItem = item
+                selectedLevel = lvl
+            end
+        end
+    end
+    return selectedItem
+end
+function common_functions.GetAvailableHQPetItem(playerLevel)
+    local selectedItem = nil
+    local selectedLevel = 0
+    for lvl, item in pairs(hqPetsByLvl) do
         if lvl <= playerLevel and lvl > selectedLevel then
             if common_functions.HasItem(item) then
                 selectedItem = item
