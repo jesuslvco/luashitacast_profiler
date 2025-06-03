@@ -1,6 +1,7 @@
 local inventoryManager = AshitaCore:GetMemoryManager():GetInventory();
 local resourceManager = AshitaCore:GetResourceManager();
 local encoding = require('encoding');
+local common_curita = gFunc.LoadFile('common\\common_curita.lua');
 
 local petsByLvl = {
     [23] = 'Herbal Broth',
@@ -106,7 +107,7 @@ function common_functions.autoDps()
             end
             if(player.MainJob == 'BST') then
 
-                
+                 
                 -- Ready
                 local recastReady = common_functions.CheckAbilityRecast('Ready');
                 local recastCallBeast = common_functions.CheckAbilityRecast('Call Beast');
@@ -116,16 +117,18 @@ function common_functions.autoDps()
                 local pet = gData.GetPet();
                 
                 if (player.Status == 'Engaged') then
-                    if (pet == nil and (bestialLoyalty <= 0 or recastCallBeast <= 0)) then
-                        local petItem =  common_functions.GetAvailablePetItem(player.MainJobLevel);
-                        local hqPetItem =  common_functions.GetAvailableHQPetItem(player.MainJobLevel);
+                    if(bestialLoyalty ~= nil and recastCallBeast ~=nil) then
+                        if (pet == nil and (bestialLoyalty <= 0 or recastCallBeast <= 0)) then
+                            local petItem =  common_functions.GetAvailablePetItem(player.MainJobLevel);
+                            local hqPetItem =  common_functions.GetAvailableHQPetItem(player.MainJobLevel);
 
-                        if (bestialLoyalty <= 0 and hqPetItem ~= nil) then
-                            AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "' .. hqPetItem..'"');
-                            AshitaCore:GetChatManager():QueueCommand(-1, '/ja "Bestial Loyalty" <me>');
-                        elseif(petItem ~= nil) and (recastCallBeast <= 0) then
-                            AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "' .. petItem..'"');
-                            AshitaCore:GetChatManager():QueueCommand(-1, '/ja "call beast" <me>');                                
+                            if (bestialLoyalty <= 0 and hqPetItem ~= nil) then
+                                AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "' .. hqPetItem..'"');
+                                AshitaCore:GetChatManager():QueueCommand(-1, '/ja "Bestial Loyalty" <me>');
+                            elseif(petItem ~= nil) and (recastCallBeast <= 0) then
+                                AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "' .. petItem..'"');
+                                AshitaCore:GetChatManager():QueueCommand(-1, '/ja "call beast" <me>');                                
+                            end
                         end
                     end
 
@@ -238,6 +241,10 @@ function common_functions.autoDps()
                 end
             end
 
+    end
+
+    if (player.MainJob == 'WHM' or player.MainJob == 'SCH' or player.MainJob == 'RDM') then
+        common_curita.process_handler(profile, sets);
     end
 
     
