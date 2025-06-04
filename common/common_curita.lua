@@ -243,7 +243,7 @@ function common_curita.GetPartyMembers()
                 member.MaxHP = 0
             end
             -- Obtener el target actual del miembro
-            local targetIndex = pEntity:GetTargetIndex(myIndex)
+            local targetIndex = pParty:GetMemberTargetIndex(i) --pEntity:GetTargetIndex(myIndex)
             if targetIndex and targetIndex > 0 then
                 local targetName = pEntity:GetName(targetIndex)
                 member.CurrentTarget = targetName

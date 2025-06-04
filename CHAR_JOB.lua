@@ -4,7 +4,7 @@ handle_common = gFunc.LoadFile('common\\handle_common.lua');
 
 local sets = {
     --common sets
-        town = { },resting = {},idle = {Head = 'Sprout beret',Body = 'Chocobo Shirt',ring1 = 'Chocobo Charm',ring2 = 'Warp Ring'},
+        town = { },resting = {},idle = {Head = 'Destrier beret',Body = 'Chocobo Shirt',ring1 = 'Chocobo Charm',ring2 = 'Warp Ring'},
         movement = {Body = 'Kupo Suit'},
         -- use /th
         th = {},
