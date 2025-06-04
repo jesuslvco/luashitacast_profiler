@@ -351,7 +351,7 @@ function common_functions.CheckAbilityRecast(check)
 	return RecastTime;
 end
 
-
+local engageProcess = false;
 function common_functions.engage()
     local player = gData.GetPlayer();
     local subLeader = common_curita.getMemberByIndex(1);
@@ -359,22 +359,28 @@ function common_functions.engage()
     local now = os.time()
     if (player.Status == 'Idle' or (player.Status == 'Resting' and player.HPP > 50)) then
         if(subLeader ~= nil) then
-            if (subLeader.Distance < 10 and subLeader.Status == 'Engaged') then
-
+            if (subLeader.Distance < 10 and subLeader.Status == 'Engaged' and engageProcess == false) then
+                engageProcess = false;
+                
                 if(player.Status == 'Resting')then
                     AshitaCore:GetChatManager():QueueCommand(-1, '/heal');
                 end
 
-                AshitaCore:GetChatManager():QueueCommand(1000, '/assist ' .. subLeader.Name);
-                AshitaCore:GetChatManager():QueueCommand(-1, '/attack <t>');
-                AshitaCore:GetChatManager():QueueCommand(-1, '/follow <t>');
+                AshitaCore:GetChatManager():QueueCommand(100, '/assist ' .. subLeader.Name);
+                AshitaCore:GetChatManager():QueueCommand(200, '/attack <t>');
+                AshitaCore:GetChatManager():QueueCommand(500, '/follow <t>');
+
+                
             end
         end
     end
-    if (player.IsMoving) and (me.Target == nil) and (subLeader.Distance > 10) then
-        AshitaCore:GetChatManager():QueueCommand(-1, '/heal');
-        AshitaCore:GetChatManager():QueueCommand(1000, '/heal');
+    if(subLeader ~= nil) then
+        if (player.IsMoving) and (me.Target == nil) and (subLeader.Distance > 12) then
+            AshitaCore:GetChatManager():QueueCommand(-1, '/heal');
+            AshitaCore:GetChatManager():QueueCommand(1000, '/heal');
+        end
     end
+    
 end
 
 return common_functions

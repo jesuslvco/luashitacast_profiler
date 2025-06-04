@@ -408,9 +408,10 @@ function handle_common.CheckDefault(sets)
     --Engage Stance
         
         --tp default
-        handle_common.tp_levels();
-
-        handle_common.useSet('tp_default');
+        local hasSet = handle_common.tp_levels();
+        if (hasSet == false) then
+            handle_common.useSet('tp_default');
+        end
 
         -- acc and eva
         if (handle_common.acc == true) then handle_common.useSet('tp_acc') end
@@ -692,24 +693,27 @@ end
 function handle_common.tp_levels()
     local player = gData.GetPlayer();
     local level = player.MainJobLevel;
+    local hasSet = false;
 
     if (level > 70) and (level < 75) then
-        handle_common.useSet('tp_level_70');
+        hasSet = handle_common.useSet('tp_level_70');
     elseif (level > 60) and (level <= 70) then
-        handle_common.useSet('tp_level_60');
+        hasSet = handle_common.useSet('tp_level_60');
     elseif (level > 50) and (level <= 60) then
-        handle_common.useSet('tp_level_50');
+        hasSet = handle_common.useSet('tp_level_50');
     elseif (level > 40) and (level <= 50) then
-        handle_common.useSet('tp_level_40');
+        hasSet = handle_common.useSet('tp_level_40');
     elseif (level > 30) and (level <= 40) then
-        handle_common.useSet('tp_level_30');
+        hasSet = handle_common.useSet('tp_level_30');
     elseif (level > 20) and (level <= 30) then
-        handle_common.useSet('tp_level_20');
+        hasSet = handle_common.useSet('tp_level_20');
     elseif (level > 10) and (level <= 20) then
-        handle_common.useSet('tp_level_10');
+        hasSet = handle_common.useSet('tp_level_10');
     elseif (level >= 1) and (level <= 10) then
-        handle_common.useSet('tp_level_1');
+        hasSet = handle_common.useSet('tp_level_1');
     end
+
+    return hasSet;
 end
 
 -- Handle Level paths to 75 for WS
@@ -975,22 +979,11 @@ function handle_common.blu_midcast()
 end
 
 
--- Control de sets
-
-function handle_common.useSet(setName)
-    if (handle_common.sets[setName] == nil) then
-        print(chat.header('GearSets'):append(chat.message('Set not found: ' .. setName)));
-        return false
-    else
-        gFunc.EquipSet(setName);
-        return true
-    end
-end
 
 function handle_common.AreaBuff()
     local player = gData.GetPlayer();
     local zone = gData.GetEnvironment();
-
+    
     local signet = gData.GetBuffCount('Signet');
     local sigil = gData.GetBuffCount('Sigil');
     local sanction = gData.GetBuffCount('Sanction');
@@ -1001,12 +994,12 @@ function handle_common.AreaBuff()
         end
     end
 	if (zone.Area ~= nil) and (handle_common.sanctionAreas:contains(zone.Area)) then
-         if (sanction <= 0) then
+        if (sanction <= 0) then
             AshitaCore:GetChatManager():QueueCommand(-1, '!sanction');
         end
     end
 	if (zone.Area ~= nil) and (handle_common.sigilAreas:contains(zone.Area)) then
-         if (sigil <= 0) then
+        if (sigil <= 0) then
             AshitaCore:GetChatManager():QueueCommand(-1, '!sigil');
         end
     end
@@ -1035,6 +1028,22 @@ function handle_common.HasItem(itemName)
         end
     end
     return false
+end
+
+-- Control de sets
+
+function handle_common.useSet(setName)
+    if (handle_common.sets[setName] == nil) then
+        print(chat.header('GearSets'):append(chat.message('Set not found: ' .. setName)));
+        return false
+    else
+        --detecta si no esta vacia
+        if(next(handle_common.sets[setName]) ~= nil) then
+            gFunc.EquipSet(setName);
+            return true
+        end
+        return false
+    end
 end
 
 return handle_common;
