@@ -407,7 +407,6 @@ function handle_common.CheckDefault(sets)
     elseif(player.Status == 'Engaged') then
     --Engage Stance
         
-        --tp default
         local hasSet = handle_common.tp_levels();
         if (hasSet == false) then
             handle_common.useSet('tp_default');
@@ -692,7 +691,7 @@ end
 -- Handle Level paths to 75
 function handle_common.tp_levels()
     local player = gData.GetPlayer();
-    local level = player.MainJobLevel;
+    local level = player.MainJobSync;
     local hasSet = false;
 
     if (level > 70) and (level < 75) then
@@ -719,7 +718,7 @@ end
 -- Handle Level paths to 75 for WS
 function handle_common.ws_levels()
     local player = gData.GetPlayer();
-    local level = player.MainJobLevel;
+    local level = player.MainJobSync;
 
     if (level > 70) and (level < 75) then
         handle_common.useSet('ws_level_70');
