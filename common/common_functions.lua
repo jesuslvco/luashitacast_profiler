@@ -356,6 +356,13 @@ function common_functions.engage()
     local player = gData.GetPlayer();
     local subLeader = common_curita.getMemberByIndex(1);
     local me = common_curita.getMemberByIndex(0);
+    
+        
+        --for k, v in pairs(target) do
+         --   print(k, v)
+        --end
+    
+        
     local now = os.time()
     if (player.Status == 'Idle' or (player.Status == 'Resting' and player.HPP > 50)) then
         if(subLeader ~= nil) then
