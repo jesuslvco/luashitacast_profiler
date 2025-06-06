@@ -382,10 +382,12 @@ function common_functions.engage()
         end
     end
     if(subLeader ~= nil) then
-        if (player.IsMoving) and (me.Target == nil) and (subLeader.Distance > 12) then
-            AshitaCore:GetChatManager():QueueCommand(-1, '/heal');
-            AshitaCore:GetChatManager():QueueCommand(1000, '/heal');
-        end
+        --[[
+            if (player.IsMoving) and (me.Target == nil) and (subLeader.Distance > 12) then
+                AshitaCore:GetChatManager():QueueCommand(-1, '/heal');
+                AshitaCore:GetChatManager():QueueCommand(1000, '/heal');
+            end
+            ]]
     end
     
 end
