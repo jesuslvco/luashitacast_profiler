@@ -271,6 +271,15 @@ function common_functions.auto()
         common_curita.process_handler(profile, sets);
     end
 
+
+
+    if(player.SubJobSync > 0) then
+        local DrainSamba = gData.GetBuffCount('Drain Samba');
+        if(player.SubJobSync > 5 and player.subJob == 'DNC' and player.TP > 200 and DrainSamba <= 0) then
+            AshitaCore:GetChatManager():QueueCommand(-1, '/ja drain samba <me>');
+        end
+    end
+
     
     
 end
