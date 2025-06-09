@@ -35,7 +35,7 @@ local common_functions = T{};
 -- Function to automatically handle DPS for specific jobs
 function common_functions.auto()
     local player = gData.GetPlayer();
-    local level = player.MainJobLevel;
+    local level = player.MainJobSync;
     local zone = gData.GetEnvironment();
     --check for gear
     local equip = gData.GetEquipment();
@@ -67,22 +67,22 @@ function common_functions.auto()
                 
                 if (player.Status == 'Engaged') then
                     
-                    if (meditateRecast <= 0) and (player.TP < 1000) and (player.MainJobLevel >=30) then
+                    if (meditateRecast <= 0) and (player.TP < 1000) and (level >=30) then
                         AshitaCore:GetChatManager():QueueCommand(-1, '/ja meditate <me>');
                     end
     
                     if(player.HPP > 30) then
-                        if (hasso <= 0) and (hassoRecast <= 0) and (player.MainJobLevel >=25) then
+                        if (hasso <= 0) and (hassoRecast <= 0) and (level >=25) then
                             AshitaCore:GetChatManager():QueueCommand(-1, '/ja hasso <me>');
                         end
                     else
                         --seigan
-                        if (seigan <= 0) and (seiganRecast <= 0) and (player.MainJobLevel >=35) then
+                        if (seigan <= 0) and (seiganRecast <= 0) and (level >=35) then
                             AshitaCore:GetChatManager():QueueCommand(-1, '/ja seigan <me>');
                         end
 
                         --third eye
-                        if (thirdeye <= 0) and (thirdeyeRecast <= 0) and (player.MainJobLevel >=15) then
+                        if (thirdeye <= 0) and (thirdeyeRecast <= 0) and (level >=15) then
                             AshitaCore:GetChatManager():QueueCommand(-1, '/ja "third eye" <me>');
                         end
                     end
@@ -129,9 +129,9 @@ function common_functions.auto()
                 
                 if (player.Status == 'Engaged') then
                     if(bestialLoyalty ~= nil and recastCallBeast ~=nil) then
-                        if (pet == nil and player.MainJobLevel >=23 and (bestialLoyalty <= 0 or recastCallBeast <= 0)) then
-                            local petItem =  common_functions.GetAvailablePetItem(player.MainJobLevel);
-                            local hqPetItem =  common_functions.GetAvailableHQPetItem(player.MainJobLevel);
+                        if (pet == nil and level >=23 and (bestialLoyalty <= 0 or recastCallBeast <= 0)) then
+                            local petItem =  common_functions.GetAvailablePetItem(level);
+                            local hqPetItem =  common_functions.GetAvailableHQPetItem(level);
 
                             if (bestialLoyalty <= 0 and hqPetItem ~= nil) then
                                 AshitaCore:GetChatManager():QueueCommand(-1, '/equip ammo "' .. hqPetItem..'"');
@@ -199,11 +199,11 @@ function common_functions.auto()
 
                 if (player.Status == 'Engaged') then
                     -- warcry
-                    if(warcry <= 0 and player.MainJobLevel >= 35) then
+                    if(warcry <= 0 and level >= 35) then
                         AshitaCore:GetChatManager():QueueCommand(-1, '/ja warcry <me>');
                     end
                     --aggressor
-                    if(aggressor <= 0 and player.MainJobLevel >= 45) then
+                    if(aggressor <= 0 and level >= 45) then
                         AshitaCore:GetChatManager():QueueCommand(-1, '/ja aggressor <me>');
                     end
                     
@@ -211,7 +211,10 @@ function common_functions.auto()
                         gFunc.CancelAction();
                         return;
                     else
-                        if(level >= 24) and (level <= 75 ) then
+                        if(level >= 60) and (level <= 75 ) then
+                           AshitaCore:GetChatManager():QueueCommand(-1, '/ws "Raging rush" <t>');
+                        end
+                        if(level >= 24) and (level <= 59 ) then
                            AshitaCore:GetChatManager():QueueCommand(-1, '/ws "Sturmwind" <t>');
                         end
                         if(level > 14) and (level < 24 ) then
@@ -234,20 +237,20 @@ function common_functions.auto()
 
                 if (player.Status == 'Engaged') then
 
-                    if(boost <= 0 and player.MainJobLevel >= 5) then
+                    if(boost <= 0 and level >= 5) then
                         AshitaCore:GetChatManager():QueueCommand(-1, '/ja boost <me>');
                     end
 
-                    if(focus <= 0 and player.MainJobLevel >= 25) then
+                    if(focus <= 0 and level >= 25) then
                         AshitaCore:GetChatManager():QueueCommand(-1, '/ja focus <me>');
                     end
 
-                    if(chakra <= 0 and player.MainJobLevel >= 35 and player.HPP < 70) then
+                    if(chakra <= 0 and level >= 35 and player.HPP < 70) then
                         AshitaCore:GetChatManager():QueueCommand(-1, '/ja chakra <me>');
                     end
 
-                    if(footwork <= 0 and player.MainJobLevel >= 65 and player.TP > 800 and player.TP < 1000) then
-                        AshitaCore:GetChatManager():QueueCommand(-1, '/ja footwork <me>');
+                    if(footwork <= 0 and level >= 65 and player.TP > 800 and player.TP < 1000) then
+                        --AshitaCore:GetChatManager():QueueCommand(-1, '/ja footwork <me>');
                     end
 
                     if(player.TP <= 999) then
@@ -269,6 +272,15 @@ function common_functions.auto()
 
     if (player.MainJob == 'WHM' or player.MainJob == 'SCH' or player.MainJob == 'RDM') then
         common_curita.process_handler(profile, sets);
+    end
+
+
+
+    if(player.SubJobSync > 0) then
+        local DrainSamba = gData.GetBuffCount('Drain Samba');
+        if(player.SubJobSync > 5 and player.subJob == 'DNC' and player.TP > 200 and DrainSamba <= 0) then
+            AshitaCore:GetChatManager():QueueCommand(-1, '/ja drain samba <me>');
+        end
     end
 
     
@@ -351,7 +363,7 @@ function common_functions.CheckAbilityRecast(check)
 	return RecastTime;
 end
 
-local engageProcess = false;
+common_functions.engageProcess = false;
 function common_functions.engage()
     local player = gData.GetPlayer();
     local subLeader = common_curita.getMemberByIndex(1);
@@ -366,18 +378,27 @@ function common_functions.engage()
     local now = os.time()
     if (player.Status == 'Idle' or (player.Status == 'Resting' and player.HPP > 50)) then
         if(subLeader ~= nil) then
-            if (subLeader.Distance < 10 and subLeader.Status == 'Engaged' and engageProcess == false) then
-                engageProcess = false;
+            if (subLeader.Distance < 15 and subLeader.Status == 'Engaged' and common_functions.engageProcess == false) then
+                common_functions.engageProcess = true;
+
+                -- Ejecutar una función después de 4 segundos
+                ashita.tasks.once(4, function()
+                    common_functions.engageProcess = false;
+                    print('5 segundos')
+                    -- Aquí va tu función o código a ejecutar
+                end)
+
+                ashita.tasks.once(3, function()
+                    AshitaCore:GetChatManager():QueueCommand(2000, '/attack <t>');
+                end)
                 
                 if(player.Status == 'Resting')then
                     AshitaCore:GetChatManager():QueueCommand(-1, '/heal');
                 end
 
                 AshitaCore:GetChatManager():QueueCommand(100, '/assist ' .. subLeader.Name);
-                AshitaCore:GetChatManager():QueueCommand(200, '/attack <t>');
-                AshitaCore:GetChatManager():QueueCommand(500, '/follow <t>');
+                AshitaCore:GetChatManager():QueueCommand(1000, '/follow <t>');
 
-                
             end
         end
     end
