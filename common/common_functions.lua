@@ -190,6 +190,27 @@ function common_functions.auto()
                 end
             end
 
+            if(player.MainJob == 'SMN') then
+
+                 
+                -- Ready
+
+                local pet = gData.GetPet();
+                
+                if (player.Status == 'Engaged') then
+                    if (pet == nil and  player.MP > 100 ) then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/ma carbuncle <me>');
+                    end
+
+                    
+                    if(pet ~= nil and pet.Status ~= 'Engaged') then
+                        AshitaCore:GetChatManager():QueueCommand(-1, '/ja "Assault" <t>');
+                    end
+
+                    
+                end
+            end
+
             if(player.MainJob == 'WAR') then
 
                 -- Call Beast
