@@ -254,6 +254,7 @@ function handle_common.HandlePreshot(sets)
     local target = gData.GetActionTarget();
     
     handle_common.useSet('preshot');
+    
 
     --COR RNG
     if (player.MainJob == 'COR' or player.MainJob == 'RNG') then
@@ -325,6 +326,9 @@ function handle_common.CheckDefault(sets)
     local hasso = gData.GetBuffCount('Hasso');
     local thirdeye = gData.GetBuffCount('Third Eye');
     local seigan = gData.GetBuffCount('Seigan');
+
+    --THF
+    local flee = gData.GetBuffCount('Flee');
     
 	handle_common.SetTownGear();
     --handle_common.auto();
@@ -364,11 +368,7 @@ function handle_common.CheckDefault(sets)
     if (pet ~= nil) and (pet.Name == 'Carbuncle') then
         handle_common.useSet('smn_carbuncle');
     end
-    -- ---------------------------------------------------
-
-    if (handle_common.choco == true) then handle_common.useSet('choco') end
-    if (handle_common.eva == true) then handle_common.useSet('eva') end
-    if (handle_common.acc == true) then handle_common.useSet('acc') end
+    
     
     --Not engaged, Not Moving   
     if (player.Status ~= 'Engaged') and (player.IsMoving ~= true) then
@@ -404,6 +404,7 @@ function handle_common.CheckDefault(sets)
         else
             handle_common.useSet('idle');
         end
+
     elseif(player.Status == 'Engaged') then
     --Engage Stance
         
@@ -430,8 +431,6 @@ function handle_common.CheckDefault(sets)
         elseif (seigan >= 1) then
             handle_common.useSet('sam_seigan');
         end
-
-
     end
 
     -- NOT RESTING
@@ -452,7 +451,10 @@ function handle_common.CheckDefault(sets)
         
     end
 
-    -- THF
+    --THF
+    if (flee > 0) then
+        handle_common.useSet('thf_flee');
+    end
     if (sa == 1) and (ta == 1) then
         handle_common.useSet('thf_sata');
     elseif (sa == 1) then
@@ -460,6 +462,12 @@ function handle_common.CheckDefault(sets)
     elseif (ta == 1) then
         handle_common.useSet('thf_ta');
     end
+
+    -- Global ---------------------------------------------------
+
+    if (handle_common.choco == true) then handle_common.useSet('choco') end
+    if (handle_common.eva == true) then handle_common.useSet('eva') end
+    if (handle_common.acc == true) then handle_common.useSet('acc') end
 	
 end
 -- Abilities
@@ -575,9 +583,7 @@ function handle_common.HandleAbility(sets)
                 end
             end
     --THF
-        if string.match(ability.Name, 'Flee') then
-		    handle_common.useSet('thf_flee');
-	    elseif string.match(ability.Name, 'Steal') then
+        if string.match(ability.Name, 'Steal') then
             handle_common.useSet('thf_steal');
         elseif string.match(ability.Name, 'Despoil') then
             handle_common.useSet('thf_despoil');
