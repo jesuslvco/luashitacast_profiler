@@ -268,6 +268,50 @@ function common_functions.auto()
                 end
             end
 
+            -- DRG
+            if(player.MainJob == 'DRG') then
+
+                local jump = common_functions.CheckAbilityRecast('Jump');
+                local hjump = common_functions.CheckAbilityRecast('High jump');
+                local sjump = common_functions.CheckAbilityRecast('Super Jump');
+                local slink = common_functions.CheckAbilityRecast('Spirit Link');
+
+                
+
+
+                if (player.Status == 'Engaged') then
+
+                    if(jump <= 0 and level >= 10 and player.TP < 1000) then
+                        AshitaCore:GetChatManager():QueueCommand(-1, '/ja jump <t>');
+                    end
+
+                    if(hjump <= 0 and level >= 35 and player.TP < 1000) then
+                        AshitaCore:GetChatManager():QueueCommand(-1, '/ja "High Jump" <t>');
+                    end
+
+                    if(sjump <= 0 and level >= 50 and player.HPP < 15) then
+                        AshitaCore:GetChatManager():QueueCommand(-1, '/ja "Super Jump" <t>');
+                    end
+
+
+                    if(player.TP <= 999) then
+                        gFunc.CancelAction();
+                        return;
+                    else
+                        if(level > 64) and (level <= 75 ) then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/ws "Wheeling Thrust" <t>');
+                        end
+                        if(level > 49) and (level <= 64 ) then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/ws "Penta Thrust" <t>');
+                        end
+                        if(level >= 1) and (level <= 49 ) then
+                            AshitaCore:GetChatManager():QueueCommand(-1, '/ws "Double Thrust" <t>');
+                        end
+                    end
+                    
+                end
+            end
+
     end
 
     if (player.MainJob == 'WHM' or player.MainJob == 'SCH' or player.MainJob == 'RDM') then
